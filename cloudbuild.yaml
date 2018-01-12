@@ -25,6 +25,8 @@ steps:
     mkdir -p target
     python -m grpc_tools.protoc \
         guestbook.proto \
+        google/api/http.proto \
+        google/api/annotations.proto \
         --include_imports \
         -I. \
         --descriptor_set_out=target/api_descriptor.pb

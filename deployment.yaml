@@ -25,6 +25,31 @@ spec:
   selector:
     app: grpc-guestbook
   type: LoadBalancer
+ 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-guestbook
+spec:
+  ports:
+  - port: 80
+    targetPort: 9001
+    protocol: TCP
+    name: http
+  selector:
+    app: grpc-guestbook
+  type: NodePort
+  
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-guestbook
+spec:
+  backend:
+    serviceName: http-guestbook
+    servicePort: 80
     
 ---
 apiVersion: extensions/v1beta1
@@ -43,12 +68,14 @@ spec:
         image: gcr.io/endpoints-release/endpoints-runtime:1
         args: [
           "--http2_port=9000",  # gRPC
+          "--http_port=9001",   # HTTP
           "--service=SERVICE_NAME",
           "--version=SERVICE_CONFIG_ID",
           "--backend=grpc://127.0.0.1:8000"
         ]
         ports:
           - containerPort: 9000
+          - containerPort: 9001
       - name: guestbook
         image: gcr.io/PROJECT_ID/grpc-guestbook:BUILD_ID
         ports:

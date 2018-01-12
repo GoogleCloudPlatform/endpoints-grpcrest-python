@@ -13,17 +13,20 @@
 # limitations under the License.
 
 FROM gcr.io/google_appengine/python
- 
+
 WORKDIR /guestbook
- 
+
 ADD *.py /guestbook/
 ADD *.proto /guestbook/
+ADD google /guestbook/google
 RUN pip install grpcio grpcio-tools
 RUN python -m grpc_tools.protoc \
+        google/api/http.proto \
+        google/api/annotations.proto \
 	guestbook.proto \
 	-I. --python_out=. --grpc_python_out=.
 
 EXPOSE 8000
- 
+
 ENTRYPOINT ["python", "/guestbook/guestbook.py"]
 

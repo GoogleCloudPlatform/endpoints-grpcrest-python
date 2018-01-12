@@ -14,18 +14,32 @@
 
 syntax = "proto3";
 
+import "google/api/annotations.proto";
+
 // This service implements a simple guestbook
 service Guestbook {
+
     // Add a new post to the guestbook
     rpc AddPost (AddPostRequest) returns (AddPostResponse) {
+        option (google.api.http) = {
+            post: "/v1/posts"
+            body: "*"
+        };
     }
 
     // Update an existing post
     rpc UpdatePost (UpdatePostRequest) returns (UpdatePostResponse) {
+        option (google.api.http) = {
+            put: "/v1/posts/{id}"
+            body: "*"
+        };
     }
 
     // List existing posts
     rpc ListPosts (ListPostsRequest) returns (ListPostsResponse) {
+        option (google.api.http) = {
+            get: "/v1/posts"
+        };
     }
 }
 
