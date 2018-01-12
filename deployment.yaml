@@ -19,12 +19,13 @@ metadata:
 spec:
   ports:
   - port: 80
-    targetPort: 8000
+    targetPort: 9000
     protocol: TCP
     name: http2
   selector:
     app: grpc-guestbook
   type: LoadBalancer
+    
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -38,6 +39,16 @@ spec:
         app: grpc-guestbook
     spec:
       containers:
+      - name: esp
+        image: gcr.io/endpoints-release/endpoints-runtime:1
+        args: [
+          "--http2_port=9000",  # gRPC
+          "--service=SERVICE_NAME",
+          "--version=SERVICE_CONFIG_ID",
+          "--backend=grpc://127.0.0.1:8000"
+        ]
+        ports:
+          - containerPort: 9000
       - name: guestbook
         image: gcr.io/PROJECT_ID/grpc-guestbook:BUILD_ID
         ports:

@@ -13,11 +13,27 @@
 # limitations under the License.
 
 steps:
+# Build api_descriptor.pb (needed to create Cloud Endpoints service)
+- name: 'gcr.io/google_appengine/python'
+  entrypoint: 'bash'
+  args:
+  - '-e'
+  - '-c'
+  - |
+    pip install grpcio grpcio-tools
+
+    mkdir -p target
+    python -m grpc_tools.protoc \
+        guestbook.proto \
+        --include_imports \
+        -I. \
+        --descriptor_set_out=target/api_descriptor.pb
+
 # Build Container
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/grpc-guestbook:$BUILD_ID', '.']
 
-# Push to Container Registry  
+# Push to Container Registry
 - name: 'gcr.io/cloud-builders/docker'
   args: ["push", "gcr.io/$PROJECT_ID/grpc-guestbook:$BUILD_ID"]
 
@@ -28,11 +44,23 @@ steps:
   - '-e'
   - '-c'
   - |
+    # Dynamically create service name based on the current project ID
+    SERVICE_NAME=guestbook.endpoints.$PROJECT_ID.cloud.goog
+
+    # Deploy to Cloud Endpoints (note that some escaping is necessary
+    # for bash variable references)
+    sed s/SERVICE_NAME/$$SERVICE_NAME/g api_config.yaml > target/api_config.yaml && \
+      gcloud endpoints services deploy target/api_descriptor.pb target/api_config.yaml
+
+    # Obtain the service config ID created by the deployment to Cloud Endpoints
+    SERVICE_CONFIG_ID=`gcloud endpoints services describe $$SERVICE_NAME --format=value\(serviceConfig.id\)`
+
     # Substitute variables in Kubernetes manifest
-    mkdir -p target
     cat deployment.yaml | \
       sed s/BUILD_ID/$BUILD_ID/g | \
-      sed s/PROJECT_ID/$PROJECT_ID/g \
+      sed s/PROJECT_ID/$PROJECT_ID/g | \
+      sed s/SERVICE_NAME/$$SERVICE_NAME/g | \
+      sed s/SERVICE_CONFIG_ID/$$SERVICE_CONFIG_ID/g \
       > target/deployment.yaml
 
 # Perform Kubernetes Deployment
