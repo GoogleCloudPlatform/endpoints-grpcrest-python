@@ -29,5 +29,8 @@ usage:
   - selector: "Guestbook.ListPosts"
     allow_unregistered_calls: true
   - selector: "Guestbook.UpdatePost"
+    allow_unregistered_calls: true 
+  - selector: "Guestbook.GetHealth"
     allow_unregistered_calls: true
+
 

@@ -76,6 +76,10 @@ class Guestbook(guestbook_pb2_grpc.GuestbookServicer):
             posts=self.posts[page * page_size: (page + 1) * page_size]
         )
 
+    def GetHealth(self, request, context):
+        import socket
+        return guestbook_pb2.GetHealthResponse(hostname=socket.gethostname())
+
 
 def server():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

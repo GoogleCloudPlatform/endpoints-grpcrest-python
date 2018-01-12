@@ -76,6 +76,18 @@ spec:
         ports:
           - containerPort: 9000
           - containerPort: 9001
+        livenessProbe:      # Used by deployment controller
+          httpGet:
+            path: /v1/health
+            port: 9001
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:     # Used by Ingress/GCLB
+          httpGet:
+            path: /v1/health
+            port: 9001
+          initialDelaySeconds: 3
+          periodSeconds: 3
       - name: guestbook
         image: gcr.io/PROJECT_ID/grpc-guestbook:BUILD_ID
         ports:

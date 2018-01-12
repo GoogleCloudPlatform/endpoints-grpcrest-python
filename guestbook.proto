@@ -41,6 +41,13 @@ service Guestbook {
             get: "/v1/posts"
         };
     }
+    
+    // Query the health status of the guestbook service
+    rpc GetHealth (GetHealthRequest) returns (GetHealthResponse) {
+        option (google.api.http) = {
+            get: "/v1/health"
+        };
+    }
 }
 
 message AddPostRequest {
@@ -76,4 +83,11 @@ message Post {
     string id = 1;
     string title = 2;
     string body = 3;
+}
+
+message GetHealthRequest {
+}
+
+message GetHealthResponse {
+    string hostname = 1;
 }
